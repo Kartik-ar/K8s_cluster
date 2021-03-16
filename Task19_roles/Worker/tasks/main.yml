@@ -1,0 +1,10 @@
+---
+# tasks file for Worker
+- copy: 
+     src: /root/role/Worker/files/joinlink.sh 
+     dest: /root/joinlink.sh 
+      
+- name: connecting to master node
+  shell: bash /root/joinlink.sh
+  ignore_errors: yes
+

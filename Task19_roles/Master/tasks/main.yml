@@ -1,0 +1,39 @@
+---
+# tasks file for Master
+- name: Pulling Images
+  command: kubeadm config images pull
+  
+- name: kubeadm 
+  shell: kubeadm init --pod-network-cidr={{ network }}/{{ cidr }} --ignore-preflight-errors=NumCPU --ignore-preflight-errors=Mem
+  ignore_errors: yes
+ 
+- name: creating directory
+  shell: mkdir -p $HOME/.kube
+  ignore_errors: yes
+  
+- name: coping admin.conf file to .kube directory
+  copy:
+     src: /etc/kubernetes/admin.conf
+     dest: $HOME/.kube/config
+     owner: ec2-user
+     group: ec2-user
+     remote_src: yes
+    
+- name: edit flannel conf
+  template:
+     src: /root/role/Master/files/flannel.yml
+     dest: /root/flannel.yml
+    
+- name: apply flannel conf
+  command: kubectl apply -f /root/flannel.yml 
+   
+- name: retriving join link 
+  command: kubeadm token create --print-join-command 
+  register: joinlink
+
+- name: Storing joininglink in local host
+  local_action: copy content={{ joinlink.stdout }} dest=/root/role/Worker/files/joinlink.sh
+    
+- debug:
+    var: joinlink.stdout
+
