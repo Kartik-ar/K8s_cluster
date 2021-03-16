@@ -1,0 +1,33 @@
+---
+# tasks file for deployment
+- name: Retriving Deployment
+  template:
+     src: /root/role/deployment/files/deployment.yml
+     dest: /root/deployment.yml
+ 
+- name: creating deployment
+  command: kubectl apply -f /root/deployment.yml
+     
+- name: Retriving Expose    
+  template:
+     src: /root/role/deployment/files/expose.yml
+     dest: /root/expose.yml
+           
+- name: creating deployment
+  command: kubectl apply -f /root/expose.yml 
+       
+- name: Retriving Exposed service detail
+  command: kubectl get svc {{ deployment_name }}
+  register: svc
+ 
+- name: creating URL
+  template:
+        src: /root/role/deployment/files/port.py
+        dest: /home/ec2-user/port.py
+
+- name: Printing URL
+  command: python port.py
+  register: port
+
+- debug:
+        var: port['stdout_lines'] 
