@@ -40,7 +40,7 @@
 - name: updating inventory file
   template:
          dest: "/root/inventory.txt"
-         src: "/root/invtest"
+         src: "K8s_cluster/Launch_instance/files/invtest"
   when: master_ip.rc == 0 or Slave_ip.rc == 0
 
 - name: updating ssh known host file
