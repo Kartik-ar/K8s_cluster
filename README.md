@@ -1,5 +1,5 @@
 # Multi-Node K8s_cluster
-we have automated the Kubernetes Multi-node cluster using Ansible automation tool 
+we have automated the Kubernetes Multi-node cluster over AWS cloud using Ansible automation tool 
 
 Requirements:
 1. Python 
@@ -28,6 +28,7 @@ Now, it will launch 3 AWS ec2 instances one master and 2 slave.
 
 ![Screenshot 2021-04-07 at 3 41 03 PM](https://user-images.githubusercontent.com/71692764/113850033-ab14ab80-97b7-11eb-80f6-ba1ab4634b13.png)
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Second Step:**
 To Configure Instances as master and Slave we have to run cluster.yml playbook:
 
@@ -45,6 +46,7 @@ Fourth, it will create deployment over master node and to do so we have to provi
 
 ![Screenshot 2021-04-07 at 4 15 01 PM](https://user-images.githubusercontent.com/71692764/113854362-6b03f780-97bc-11eb-8848-d60406b4232f.png)
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Find Demo Video Of This architechture over aws from below link:
 
 
