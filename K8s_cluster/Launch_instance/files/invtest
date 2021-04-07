@@ -1,0 +1,10 @@
+[slave]
+{% for ip in range(0, Slave_ip['stdout_lines'] | count) %}
+{{ Slave_ip['stdout_lines'][ip] }}                
+{% endfor %}
+
+[Master]
+{% for ip in range(0, master_ip['stdout_lines'] | count) %}
+{{ master_ip['stdout_lines'][ip] }}                
+{% endfor %}
+

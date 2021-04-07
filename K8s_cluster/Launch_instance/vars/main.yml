@@ -1,0 +1,9 @@
+---
+# vars file for Launch_instance
+EC2:
+ - tag_list: master
+   instance_count: 1
+
+ - tag_list: slave
+   instance_count: 2
+

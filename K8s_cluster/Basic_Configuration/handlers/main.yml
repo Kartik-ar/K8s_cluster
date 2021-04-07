@@ -1,0 +1,9 @@
+---
+# handlers file for master
+- name: restart docker
+  service:
+     name: docker
+     state: restarted
+
+- name: updating yum
+  command: yum repolist
