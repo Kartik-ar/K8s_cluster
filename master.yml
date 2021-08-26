@@ -1,0 +1,7 @@
+- hosts: Master
+  vars_prompt:
+          - name: network
+            prompt: "Enter The Network ID for your cluster network"
+            private: no    
+  roles: 
+     - Master

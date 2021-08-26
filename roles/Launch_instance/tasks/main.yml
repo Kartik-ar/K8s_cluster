@@ -1,0 +1,68 @@
+---
+# tasks file for Launch_instance
+- name: installing Instance with master and slave tag
+  amazon.aws.ec2:
+         key_name: "{{ Keypair }}"
+         instance_type: "{{ instancetype }}"
+         image: "{{ AMI }}"
+         wait: yes
+         wait_timeout: 120
+         count: "{{ item.instance_count | int }}"
+         volumes:
+           - device_name: /dev/xvda
+             volume_type: gp2
+             volume_size: "{{ volumesize }}"
+             delete_on_termination: True
+         instance_tags:
+                K8s: "{{ item.tag_list }}"
+         vpc_subnet_id: subnet-84746eec
+         assign_public_ip: yes
+         region: "{{ region }}"
+         zone: "ap-south-1a"
+  loop: "{{ EC2 }}"
+  register: ec2
+
+- name: debug
+  debug:
+    var: ec2.results[0].instance_ids[0] 
+
+- name: EFS provisioning
+  community.aws.efs:
+    state: present
+    name: myTestEFS
+    region: 'ap-south-1'
+    tags: {'name' : 'ansible_efs'}
+    targets:
+    - subnet_id: subnet-84746eec
+      security_groups: ['sg-56712c2e']
+
+- name: Retriving Master Node IP
+  shell:
+        cmd: "aws ec2 describe-instances --query 'Reservations[*].Instances[*].{Instance:PublicIpAddress}' --filters Name=tag-value,Values=master  --output text"
+  ignore_errors: yes
+  register: master_ip
+
+- name: Retriving Slave node IP
+  shell:
+        cmd: "aws ec2 describe-instances --query 'Reservations[*].Instances[*].{Instance:PublicIpAddress}' --filters Name=tag-value,Values=slave  --output text"
+  ignore_errors: yes
+  register: Slave_ip
+
+- name: updating inventory file
+  template:
+         dest: "inventory"
+         src: "roles/Launch_instance/files/invtest"
+  when: master_ip.rc == 0 or Slave_ip.rc == 0
+
+- name: updating ssh known host file
+  shell:  |
+        {% for ip in range(0, Slave_ip['stdout_lines'] | count) %}
+        echo `ssh-keyscan -t ecdsa {{ Slave_ip['stdout_lines'][ip] }}` >> /root/.ssh/known_hosts
+        {% endfor %}
+  
+        {% for ip in range(0, master_ip['stdout_lines'] | count) %}
+        echo `ssh-keyscan -t ecdsa {{ master_ip['stdout_lines'][ip] }}` >> /root/.ssh/known_hosts
+        {% endfor %}
+
+    
+

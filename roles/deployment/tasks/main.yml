@@ -1,0 +1,58 @@
+---
+# tasks file for deployment
+- command: "aws efs describe-file-systems --query 'FileSystems[*].FileSystemId' --output text"
+  register: efsid
+  delegate_to: 127.0.0.1  
+
+- shell: "aws efs describe-file-systems --query 'FileSystems[*].FileSystemArn' --output text | awk -F: '{print $4}'"
+  register: region
+  delegate_to: 127.0.0.1
+
+- name: Copying Configmap file
+  template:
+     src: /root/K8s_cluster/roles/deployment/templates/configmap.yml
+     dest: configmap.yaml
+           
+- name: Creating configmap
+  command: kubectl apply -f configmap.yaml 
+
+- name: Copying Storageclass file
+  template:
+     src: /root/K8s_cluster/roles/deployment/templates/sc.yml
+     dest: sc.yaml
+          
+- name: creating Storageclass
+  command: kubectl apply -f sc.yaml 
+
+- name: Copying Mysql db deployment file
+  template:
+     src: /root/K8s_cluster/roles/deployment/templates/mysql_db.yml
+     dest: mysql.yaml
+           
+- name: creating Mysql db deployment
+  command: kubectl apply -f mysql.yaml 
+      
+
+- name: Copying wordpress app deployment file     
+  template:
+     src: /root/K8s_cluster/roles/deployment/templates/wp.yml
+     dest: wp.yaml
+           
+- name: creating wordpress deployment
+  command: kubectl apply -f wp.yaml 
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

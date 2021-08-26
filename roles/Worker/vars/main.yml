@@ -1,0 +1,16 @@
+---
+# vars file for Worker
+packages:
+      - docker
+      - kubelet
+      - kubeadm
+      - kubectl
+      - iproute-tc
+      - python
+service:
+      - docker
+      - kubelet
+sysctl:
+      - net.bridge.bridge-nf-call-iptables
+      - net.bridge.bridge-nf-call-ip6tables
+

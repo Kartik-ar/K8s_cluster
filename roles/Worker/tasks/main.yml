@@ -1,0 +1,72 @@
+---
+# tasks file for Worker
+- name: Configuring Yum repo for kubernetes
+  blockinfile:
+           path: /etc/yum.repos.d/kubernetes.repo
+           create: True
+           marker: "#<!-- {mark} ANSIBLE MANAGED BLOCK -->"
+           block: |
+                 [kubernetes]
+                 name=Kubernetes
+                 baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+                 enabled=1
+                 gpgcheck=1
+                 repo_gpgcheck=1
+                 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+                 exclude=kubelet kubeadm kubectl
+  register: file
+
+- name: updating yum
+  command: yum repolist -y
+  when: file.changed == True
+
+- name: Installing required packages
+  yum:
+        name: "{{ packages }}"
+        state: present
+        disable_excludes: kubernetes
+  loop: "{{ packages }}"
+
+- name: Enable kubelet service
+  service:
+         name: kubelet
+         state: started
+         enabled: yes
+  ignore_errors: yes
+
+- name: Enable docker service
+  service:
+         name: docker
+         state: started
+         enabled: yes
+  ignore_errors: yes
+
+- name: Changing CGROUP Driver of Docker To systemd
+  copy:
+         dest: /etc/docker/daemon.json
+         content: |
+                 {
+                         "exec-opts": ["native.cgroupdriver=systemd"]
+                         }
+  register: docker
+
+- name: restart docker
+  service:
+     name: docker
+     state: restarted
+  when: docker.changed == True
+
+- name:
+  sysctl:
+        name: net.bridge.bridge-nf-call-iptables
+        value: '1'
+        sysctl_set: yes
+
+- copy: 
+     src: roles/Worker/files/joinlink.sh 
+     dest: /root/joinlink.sh 
+      
+- name: connecting to master node
+  shell: bash /root/joinlink.sh
+  ignore_errors: yes
+
